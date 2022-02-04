@@ -10,6 +10,11 @@ class ReactiveEffect {
 }
 
 const targetMap = new Map();
+
+/**
+ * @param target 当前目标
+ * @param key 当前目标属性
+ */
 export function track(target, key) {
   // target -> key -> deps -> activeEffect
   let depsMap = targetMap.get(target);
@@ -26,6 +31,10 @@ export function track(target, key) {
   dep.add(activeEffect);
 }
 
+/**
+ * @param target 当前目标
+ * @param key 当前目标属性
+ */
 export function trigger(target, key) {
   let depsMap = targetMap.get(target);
   let dep = depsMap.get(key);
