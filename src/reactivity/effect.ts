@@ -1,7 +1,9 @@
 class ReactiveEffect {
   private _fn: any;
-  constructor(fn) {
+  public scheduler: Function | undefined;
+  constructor(fn, scheduler?: Function) {
     this._fn = fn;
+    this.scheduler = scheduler;
   }
   run() {
     activeEffect = this;
@@ -40,7 +42,11 @@ export function trigger(target, key) {
   let dep = depsMap.get(key);
   // 执行收集到的所有effect的run方法
   for (const effect of dep) {
-    effect.run();
+    if (effect.scheduler) {
+      effect.scheduler();
+    } else {
+      effect.run();
+    }
   }
 }
 
@@ -50,10 +56,11 @@ let activeEffect;
 /**
  * 
  * @param fn 
+ * @param options 
  * @returns 
  */
-export function effect(fn) {
-  const _effect = new ReactiveEffect(fn);
+export function effect(fn, options: any = {}) {
+  const _effect = new ReactiveEffect(fn, options.scheduler);
   _effect.run();
   return _effect.run.bind(_effect);
 }
