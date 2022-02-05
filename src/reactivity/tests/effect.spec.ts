@@ -1,5 +1,5 @@
 import { reactive } from "../reactive";
-import { effect } from "../effect";
+import { effect, stop } from "../effect";
 
 describe("effect", () => {
   it("happy path", () => {
@@ -57,5 +57,21 @@ describe("effect", () => {
     run();
     // should have run
     expect(dummy).toBe(2);
+  });
+
+  it("stop", () => {
+    // 调用 stop 时，响应式对象 set 更新时不会调用 trigger
+    let dummy;
+    const obj = reactive({ foo: 1 });
+    const runner = effect(() => {
+      dummy = obj.foo;
+    });
+    obj.foo = 2;
+    expect(dummy).toBe(2);
+    stop(runner);
+    obj.foo = 3;
+    expect(dummy).toBe(2);
+    runner();
+    expect(dummy).toBe(3);
   });
 });
