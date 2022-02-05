@@ -1,6 +1,7 @@
 class ReactiveEffect {
   private _fn: any;
   active = true;
+  onStop?: () => void;
   public scheduler: Function | undefined;
   deps = [];
   constructor(fn, scheduler?: Function) {
@@ -15,7 +16,10 @@ class ReactiveEffect {
     // 避免多次调用时清空多次
     if (this.active) {
       cleanupEffect(this);
-      this.active = false
+      if (this.onStop) {
+        this.onStop();
+      }
+      this.active = false;
     }
   }
 }
@@ -79,6 +83,7 @@ let activeEffect;
  */
 export function effect(fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler);
+  _effect.onStop = options.onStop;
   _effect.run();
   const runner: any = _effect.run.bind(_effect);
   runner.effect = _effect;

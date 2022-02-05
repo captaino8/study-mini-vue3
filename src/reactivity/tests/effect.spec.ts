@@ -74,4 +74,23 @@ describe("effect", () => {
     runner();
     expect(dummy).toBe(3);
   });
+
+  it("onStop", () => {
+    // 1. 通过 effect 的第二个参数传递一个 onStop fn
+    // 2. effect 第一次执行的时候 fn 会执行， scheduler 不执行
+    // 3. 当执行 stop 时 onStop 会执行
+    let dummy;
+    const obj = reactive({ foo: 1 });
+    let onStop = jest.fn();
+    const runner = effect(
+      () => {
+        dummy = obj.foo;
+      },
+      {
+        onStop,
+      }
+    );
+    stop(runner);
+    expect(onStop).toHaveBeenCalledTimes(1)
+  });
 });
