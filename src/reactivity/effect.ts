@@ -1,5 +1,6 @@
 class ReactiveEffect {
   private _fn: any;
+  active = true;
   public scheduler: Function | undefined;
   deps = [];
   constructor(fn, scheduler?: Function) {
@@ -11,10 +12,18 @@ class ReactiveEffect {
     return this._fn();
   }
   stop() {
-    this.deps.forEach((dep: any) => {
-      dep.delete(this);
-    });
+    // 避免多次调用时清空多次
+    if (this.active) {
+      cleanupEffect(this);
+      this.active = false
+    }
   }
+}
+
+function cleanupEffect(effect) {
+  effect.deps.forEach((dep: any) => {
+    dep.delete(effect);
+  });
 }
 
 const targetMap = new Map();
@@ -35,11 +44,11 @@ export function track(target, key) {
     dep = new Set();
     depsMap.set(key, dep);
   }
-  
-  if (!activeEffect) return
+
+  if (!activeEffect) return;
   // dep用来存放所有的effect
   dep.add(activeEffect);
-  activeEffect.deps.push(dep)
+  activeEffect.deps.push(dep);
 }
 
 /**
