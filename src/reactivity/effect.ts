@@ -5,7 +5,7 @@ class ReactiveEffect {
   }
   run() {
     activeEffect = this;
-    this._fn();
+    return this._fn();
   }
 }
 
@@ -46,7 +46,14 @@ export function trigger(target, key) {
 
 // 定义一个全局的容器
 let activeEffect;
+
+/**
+ * 
+ * @param fn 
+ * @returns 
+ */
 export function effect(fn) {
   const _effect = new ReactiveEffect(fn);
   _effect.run();
+  return _effect.run.bind(_effect);
 }
