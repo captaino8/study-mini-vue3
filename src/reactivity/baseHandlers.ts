@@ -1,4 +1,5 @@
 import { track, trigger } from "./effect";
+import { ReactiveFlags } from "./reactive";
 
 // 只在初始化的时候会调用
 const get = createGetter();
@@ -13,6 +14,12 @@ function createGetter(readonly = false) {
    * @returns
    */
   return function (target, key) {
+    if (key === ReactiveFlags.IS_REACTIVE) {
+      return !readonly;
+    } else if (key === ReactiveFlags.IS_READONLY) {
+      return readonly;
+    }
+
     const res = Reflect.get(target, key);
     // TODO 依赖收集
     if (!readonly) {
