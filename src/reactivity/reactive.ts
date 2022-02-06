@@ -6,7 +6,7 @@ export function reactive(raw) {
     /**
      * @param target 当前对象
      * @param key 访问的当前对象的属性
-     * @returns 
+     * @returns
      */
     get(target, key) {
       const res = Reflect.get(target, key);
@@ -15,17 +15,32 @@ export function reactive(raw) {
       return res;
     },
     /**
-     * 
+     *
      * @param target 当前对象
      * @param key 当前要更新的对象的属性
      * @param value 要更新的值
-     * @returns 
+     * @returns
      */
     set(target, key, value) {
       const res = Reflect.set(target, key, value);
       // TODO 触发依赖
       trigger(target, key);
       return res;
+    },
+  });
+}
+
+export function readonly(raw) {
+  return new Proxy(raw, {
+    get(target, key) {
+      const res = Reflect.get(target, key);
+      // not track
+      return res;
+    },
+    set(target, key, value) {
+      console.warn(`key: ${key} set失败 因为 target 是 readonly`, target);
+      // not set
+      return true;
     },
   });
 }
