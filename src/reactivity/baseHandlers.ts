@@ -7,7 +7,7 @@ const set = createSetter();
 
 const readonlyGetter = createGetter(true);
 
-function createGetter(readonly = false) {
+function createGetter(isReadonly = false) {
   /**
    * @param target 当前对象
    * @param key 访问的当前对象的属性
@@ -15,14 +15,14 @@ function createGetter(readonly = false) {
    */
   return function (target, key) {
     if (key === ReactiveFlags.IS_REACTIVE) {
-      return !readonly;
+      return !isReadonly;
     } else if (key === ReactiveFlags.IS_READONLY) {
-      return readonly;
+      return isReadonly;
     }
 
     const res = Reflect.get(target, key);
     // TODO 依赖收集
-    if (!readonly) {
+    if (!isReadonly) {
       track(target, key);
     }
     return res;

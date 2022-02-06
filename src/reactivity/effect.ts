@@ -1,5 +1,11 @@
 import { extend } from "../shared";
 
+// 定义一个全局的容器
+let activeEffect;
+
+// 执行 run 的时候才能收集依赖
+let shouldTrack;
+
 class ReactiveEffect {
   private _fn: any;
   active = true;
@@ -11,8 +17,14 @@ class ReactiveEffect {
     this.scheduler = scheduler;
   }
   run() {
+    if (!this.active) {
+      return this._fn();
+    }
+    shouldTrack = true;
     activeEffect = this;
-    return this._fn();
+    const result = this._fn();
+    shouldTrack = false;
+    return result;
   }
   stop() {
     // 避免多次调用时清空多次
@@ -32,6 +44,10 @@ function cleanupEffect(effect) {
   });
 }
 
+function isTracking() {
+  return shouldTrack && activeEffect !== undefined;
+}
+
 const targetMap = new Map();
 
 /**
@@ -39,6 +55,8 @@ const targetMap = new Map();
  * @param key 当前目标属性
  */
 export function track(target, key) {
+  if (!isTracking()) return;
+
   // target -> key -> deps -> activeEffect
   let depsMap = targetMap.get(target);
   if (!depsMap) {
@@ -51,8 +69,8 @@ export function track(target, key) {
     depsMap.set(key, dep);
   }
 
-  if (!activeEffect) return;
   // dep用来存放所有的effect
+  if (dep.has(activeEffect)) return; //避免重复收集 activeEffect
   dep.add(activeEffect);
   activeEffect.deps.push(dep);
 }
@@ -73,9 +91,6 @@ export function trigger(target, key) {
     }
   }
 }
-
-// 定义一个全局的容器
-let activeEffect;
 
 /**
  *
