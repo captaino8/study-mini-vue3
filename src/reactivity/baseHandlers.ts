@@ -1,4 +1,4 @@
-import { isObject } from "../shared";
+import { extend, isObject } from "../shared";
 import { track, trigger } from "./effect";
 import { reactive, readonly, ReactiveFlags } from "./reactive";
 
@@ -8,7 +8,9 @@ const set = createSetter();
 
 const readonlyGetter = createGetter(true);
 
-function createGetter(isReadonly = false) {
+const shallowReadonlyGetters = createGetter(true, true);
+
+function createGetter(isReadonly = false, isShallow = false) {
   /**
    * @param target 当前对象
    * @param key 访问的当前对象的属性
@@ -22,6 +24,10 @@ function createGetter(isReadonly = false) {
     }
 
     const res = Reflect.get(target, key);
+
+    if (isShallow) {
+      return res;
+    }
 
     // 判断 res 是不是 Object
     if (isObject(res)) {
@@ -64,3 +70,10 @@ export const readonlyHandlers = {
     return true;
   },
 };
+
+export const shallowReadonlyHandlers = extend(
+  {},
+  {
+    get: shallowReadonlyGetters,
+  }
+);
