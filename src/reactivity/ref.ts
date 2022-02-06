@@ -6,6 +6,7 @@ class RefImpl {
   private _value: any;
   private _rawValue: any;
   dep = new Set();
+  public __v_isRef = true;
   constructor(value) {
     this._rawValue = value;
     // 判断 value 是不是对象
@@ -42,4 +43,12 @@ function convert(value) {
 
 export function ref(raw) {
   return new RefImpl(raw);
+}
+
+export function isRef(value) {
+  return !!value.__v_isRef;
+}
+
+export function unRef(ref) {
+  return isRef(ref) ? ref.value : ref;
 }
