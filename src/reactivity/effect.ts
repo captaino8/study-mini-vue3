@@ -44,7 +44,7 @@ function cleanupEffect(effect) {
   });
 }
 
-function isTracking() {
+export function isTracking() {
   return shouldTrack && activeEffect !== undefined;
 }
 
@@ -68,8 +68,15 @@ export function track(target, key) {
     dep = new Set();
     depsMap.set(key, dep);
   }
+  trackEffect(dep);
+}
 
-  // dep用来存放所有的effect
+/**
+ *
+ * @param dep dep用来存放所有的effect
+ * @returns
+ */
+export function trackEffect(dep) {
   if (dep.has(activeEffect)) return; //避免重复收集 activeEffect
   dep.add(activeEffect);
   activeEffect.deps.push(dep);
@@ -82,6 +89,14 @@ export function track(target, key) {
 export function trigger(target, key) {
   let depsMap = targetMap.get(target);
   let dep = depsMap.get(key);
+  triggerEffect(dep);
+}
+
+/**
+ *
+ * @param dep 用来存放所有的effect的容器
+ */
+export function triggerEffect(dep) {
   // 执行收集到的所有effect的run方法
   for (const effect of dep) {
     if (effect.scheduler) {
