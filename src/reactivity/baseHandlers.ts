@@ -1,5 +1,6 @@
+import { isObject } from "../shared";
 import { track, trigger } from "./effect";
-import { ReactiveFlags } from "./reactive";
+import { reactive, readonly, ReactiveFlags } from "./reactive";
 
 // 只在初始化的时候会调用
 const get = createGetter();
@@ -21,6 +22,11 @@ function createGetter(isReadonly = false) {
     }
 
     const res = Reflect.get(target, key);
+
+    // 判断 res 是不是 Object
+    if (isObject(res)) {
+      return isReadonly ? readonly(res) : reactive(res);
+    }
     // TODO 依赖收集
     if (!isReadonly) {
       track(target, key);
