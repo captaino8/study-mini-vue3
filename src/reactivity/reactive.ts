@@ -1,46 +1,14 @@
-import { track, trigger } from "./effect";
+import { mutablehandlers, readonlyHandlers } from "./baseHandlers";
 
 export function reactive(raw) {
-  // 本质就是 proxy，可以拦截get和set并执行相应方法
-  return new Proxy(raw, {
-    /**
-     * @param target 当前对象
-     * @param key 访问的当前对象的属性
-     * @returns
-     */
-    get(target, key) {
-      const res = Reflect.get(target, key);
-      // TODO 依赖收集
-      track(target, key);
-      return res;
-    },
-    /**
-     *
-     * @param target 当前对象
-     * @param key 当前要更新的对象的属性
-     * @param value 要更新的值
-     * @returns
-     */
-    set(target, key, value) {
-      const res = Reflect.set(target, key, value);
-      // TODO 触发依赖
-      trigger(target, key);
-      return res;
-    },
-  });
+  return createActiveObject(raw, mutablehandlers);
 }
 
 export function readonly(raw) {
-  return new Proxy(raw, {
-    get(target, key) {
-      const res = Reflect.get(target, key);
-      // not track
-      return res;
-    },
-    set(target, key, value) {
-      console.warn(`key: ${key} set失败 因为 target 是 readonly`, target);
-      // not set
-      return true;
-    },
-  });
+  return createActiveObject(raw, readonlyHandlers);
+}
+
+function createActiveObject(raw, basehandlers) {
+  // 本质就是 proxy，可以拦截get和set并执行相应方法
+  return new Proxy(raw, basehandlers);
 }

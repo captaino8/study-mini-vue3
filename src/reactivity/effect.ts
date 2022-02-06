@@ -78,15 +78,15 @@ export function trigger(target, key) {
 let activeEffect;
 
 /**
- * 
- * @param fn 
- * @param options 
- * @returns 
+ *
+ * @param fn
+ * @param options
+ * @returns
  */
 export function effect(fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler);
   // options
-  extend(_effect,options)
+  extend(_effect, options);
   _effect.run();
   const runner: any = _effect.run.bind(_effect);
   runner.effect = _effect;

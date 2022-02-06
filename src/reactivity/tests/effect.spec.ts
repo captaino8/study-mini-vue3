@@ -91,6 +91,6 @@ describe("effect", () => {
       }
     );
     stop(runner);
-    expect(onStop).toHaveBeenCalledTimes(1)
+    expect(onStop).toHaveBeenCalledTimes(1);
   });
 });
