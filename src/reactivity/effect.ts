@@ -6,7 +6,7 @@ let activeEffect;
 // 执行 run 的时候才能收集依赖
 let shouldTrack;
 
-class ReactiveEffect {
+export class ReactiveEffect {
   private _fn: any;
   active = true;
   onStop?: () => void;
