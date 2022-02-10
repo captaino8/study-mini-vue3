@@ -53,6 +53,11 @@ function mountChildren(children, container) {
 }
 
 function setupRenderEffect(instance, initialVNode, container) {
-  const subTree = instance.render();
+  const { proxy } = instance;
+  const subTree = instance.render.call(proxy);
   patch(subTree, container);
+
+  // 这时所有的 element 类型都已经执行完了
+  // 此时的都是组件上的属性
+  initialVNode.el = subTree.el;
 }

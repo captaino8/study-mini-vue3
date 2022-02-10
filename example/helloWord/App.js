@@ -1,7 +1,9 @@
 import { h } from "../../lib/my-vue.esm.js";
 
+window.self = null;
 export const App = {
   render() {
+    self = this;
     return h(
       "div",
       { id: "root" },
