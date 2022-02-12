@@ -1,4 +1,4 @@
-import { extend, isObject } from "../shared";
+import { extend, isObject } from "../shared/index";
 import { track, trigger } from "./effect";
 import { reactive, readonly, ReactiveFlags } from "./reactive";
 
@@ -65,7 +65,10 @@ export const mutablehandlers = {
 export const readonlyHandlers = {
   get: readonlyGetter,
   set(target, key, value) {
-    console.warn(`key: ${String(key)} set失败 因为 target 是 readonly`, target);
+    console.warn(
+      `key: ${String(key)} set失败 因为 target 是 readonly`,
+      target
+    );
     // not set
     return true;
   },
@@ -75,5 +78,13 @@ export const shallowReadonlyHandlers = extend(
   {},
   {
     get: shallowReadonlyGetters,
+    set(target, key, value) {
+      console.warn(
+        `key: ${String(key)} set失败 因为 target 是 readonly`,
+        target
+      );
+      // not set
+      return true;
+    },
   }
 );
