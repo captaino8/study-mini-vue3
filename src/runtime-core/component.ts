@@ -26,6 +26,8 @@ function setupStatefulComponent(instance: any) {
   if (setup) {
     const setupResult = setup(shallowReadonly(instance.props));
     handleSetupResult(instance, setupResult);
+  } else {
+    finishComponentSetup(instance);
   }
 }
 function handleSetupResult(instance, setupResult: any) {
