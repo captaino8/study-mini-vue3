@@ -6,7 +6,12 @@ export const App = {
     self = this;
     return h(
       "div",
-      { id: "root" },
+      {
+        id: "root",
+        onClick() {
+          console.log("click");
+        },
+      },
       // "Hi, " + this.msg
       [h("p", { class: "red" }, "Hi"), h("p", { class: "blue" }, "my-vue")]
     );
