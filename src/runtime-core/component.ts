@@ -30,9 +30,13 @@ function setupStatefulComponent(instance: any) {
   instance.proxy = new Proxy({ _: instance }, PublicInstanceProxyHandlers);
   const { setup } = Component;
   if (setup) {
+    setCurrentInstance(instance);
     const setupResult = setup(shallowReadonly(instance.props), {
       emit: instance.emit,
     });
+    // 执行了 setup 后再初始化 currentInstance
+    setCurrentInstance(null);
+
     handleSetupResult(instance, setupResult);
   } else {
     finishComponentSetup(instance);
@@ -52,4 +56,15 @@ function finishComponentSetup(instance: any) {
   if (Component.render) {
     instance.render = Component.render;
   }
+}
+
+let currentInstance = null;
+
+export function getCurrentInstance() {
+  return currentInstance;
+}
+
+// 抽离出一个方法，便于调试
+export function setCurrentInstance(instance) {
+  currentInstance = instance;
 }
