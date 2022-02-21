@@ -21,6 +21,12 @@ export function createRenderer(options) {
     if (n1 === n2) {
       return;
     }
+
+    if (n1 && !isSameVNodeType(n1, n2)) {
+      anchor = n1.el.nextSibling;
+      hostRemove(n1.el);
+      n1 = null;
+    }
     // 判断是 element 还是 component
     const { shapeFlag, type } = n2;
     switch (type) {
@@ -153,9 +159,11 @@ export function createRenderer(options) {
     parentAnchor
   ) {
     let i = 0;
-    const l2 = c2.length;
     let e1 = c1.length - 1;
+    const l2 = c2.length;
     let e2 = l2 - 1;
+
+    // 对比左侧
     while (i <= e1 && i <= e2) {
       const n1 = c1[i];
       const n2 = c2[i];
@@ -167,6 +175,7 @@ export function createRenderer(options) {
       i++;
     }
 
+    // 对比右侧
     while (i <= e1 && i <= e2) {
       const n1 = c1[e1];
       const n2 = c2[e2];
@@ -181,9 +190,9 @@ export function createRenderer(options) {
 
     if (i > e1) {
       if (i <= e2) {
+        const nextPos = e2 + 1;
+        const anchor = nextPos < l2 ? c2[nextPos].el : null;
         while (i <= e2) {
-          const nextPos = e2 + 1;
-          const anchor = e2 < l2 ? c2[nextPos].el : null;
           patch(null, c2[i], container, parentComponent, anchor);
           i++;
         }
@@ -204,7 +213,7 @@ export function createRenderer(options) {
       let patched = 0;
 
       let moved = false;
-      let maxNexIndexSoFar = 0;
+      let maxNewIndexSoFar = 0;
 
       // 初始化为0，映射新老节点的index
       let newIndexToOldIndexMap = new Array(toBePatched);
@@ -216,8 +225,8 @@ export function createRenderer(options) {
         keyToNewIndexMap.set(nextChild.key, i);
       }
 
-      // 遍历老节点，删除新节点不存在的节点
-      for (let i = s1; i <= s1; i++) {
+      // 中间节点，遍历老节点，删除新节点不存在的节点
+      for (let i = s1; i <= e1; i++) {
         const prevChild = c1[i];
 
         // 优化点
@@ -242,34 +251,35 @@ export function createRenderer(options) {
         if (newIndex === undefined) {
           hostRemove(prevChild.el);
         } else {
-          if (newIndex > maxNexIndexSoFar) {
-            maxNexIndexSoFar = newIndex;
+          if (newIndex > maxNewIndexSoFar) {
+            maxNewIndexSoFar = newIndex;
           } else {
             moved = true;
           }
           newIndexToOldIndexMap[newIndex - s2] = i + 1;
+
           patch(prevChild, c2[newIndex], container, parentComponent, null);
           patched++;
         }
       }
 
+      // 移动中间节点
       const increasingNewIndexSequence = moved
         ? getSequence(newIndexToOldIndexMap)
         : [];
 
       let j = increasingNewIndexSequence.length - 1;
-      for (let i = toBePatched; i >= 0; i++) {
-        const nextIndex = i - 1 + s2;
+      for (let i = toBePatched - 1; i >= 0; i--) {
+        const nextIndex = s2 + i;
         const nextChild = c2[nextIndex];
         const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : parentAnchor;
-
-        if (increasingNewIndexSequence[i] === 0) {
-          patch(null, nextChild, container, parentComponent, parentAnchor);
+        if (newIndexToOldIndexMap[i] === 0) {
+          patch(null, nextChild, container, parentComponent, anchor);
         } else if (moved) {
           // j没有了，说明剩下的都需要移动了
           // 在最长递增子序列不存在，说明需要移动
           if (j < 0 || increasingNewIndexSequence[j] !== i) {
-            hostInsert(nextChild, container, anchor);
+            hostInsert(nextChild.el, container, anchor);
           } else {
             // 此时命中了最长递增子序列，不需要移动
             // 移动指针
@@ -312,7 +322,7 @@ export function createRenderer(options) {
   }
 
   function setupRenderEffect(instance, initialVNode, container, anchor) {
-    effect(() => {
+    instance.update = effect(() => {
       if (!instance.isMounted) {
         const { proxy } = instance;
         const subTree = (instance.subTree = instance.render.call(proxy));
