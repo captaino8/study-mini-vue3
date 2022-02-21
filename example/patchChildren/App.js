@@ -11,9 +11,9 @@ export const App = {
     return h("div", { tId: 1 }, [
       h("p", {}, "主页"),
       // h(TextToText),
-      h(TextToArray)
+      // h(TextToArray)
       // h(ArrayToText)
-      // h(ArrayToArray)
+      h(ArrayToArray)
     ]);
   },
 };
